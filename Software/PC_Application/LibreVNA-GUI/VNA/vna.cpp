@@ -54,12 +54,23 @@
 #include <QStandardItemModel>
 #include <QDateTime>
 
+class SizeReportingScrollArea : public QScrollArea
+{
+protected:
+    void resizeEvent(QResizeEvent *event) override
+    {
+        QScrollArea::resizeEvent(event);
+        const QSize& size = event->size();
+        printf("size: %i * %i\n", size.width(), size.height());
+    }
+};
+
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
       deembedding(traceModel),
       deembedding_active(false),
       tiles(new TileWidget(traceModel)),
-    central(new QScrollArea)
+    central(new SizeReportingScrollArea)
 {
     central->setWidget(tiles);
     central->setWidgetResizable(true);
