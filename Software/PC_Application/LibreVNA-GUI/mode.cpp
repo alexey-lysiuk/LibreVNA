@@ -12,6 +12,8 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QPainter>
+#include <QSvgGenerator>
 
 //QButtonGroup* Mode::modeButtonGroup = nullptr;
 
@@ -141,17 +143,26 @@ Mode::Type Mode::TypeFromName(QString s)
 
 void Mode::saveSreenshot()
 {
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "SVG image files (*.svg)", nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;
     }
     Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
-    if(filename.endsWith(".png")) {
+    if(filename.endsWith(".svg")) {
         filename.chop(4);
     }
-    filename += ".png";
-    central->grab().save(filename);
+    filename += ".svg";
+
+    QSvgGenerator generator;
+    generator.setFileName(filename);
+    generator.setSize(central->size());
+
+    QPainter painter;
+    if (painter.begin(&generator)) {
+        central->render(&painter);
+        painter.end();
+    }
 }
 
 void Mode::finalize(QWidget *centralWidget)
