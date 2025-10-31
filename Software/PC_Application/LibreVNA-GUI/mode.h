@@ -42,7 +42,6 @@ public:
     virtual void deviceDisconnected(){}
 
     virtual void saveSreenshot();
-    virtual void saveSVG();
 
     virtual void setAveragingMode(Averaging::Mode mode) = 0;
 

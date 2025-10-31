@@ -144,44 +144,80 @@ Mode::Type Mode::TypeFromName(QString s)
 
 void Mode::saveSreenshot()
 {
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
+    const QStringList extensions = QStringList() << "png" << "svg";
+    QStringList filters;
+
+    for (const QString& ext: extensions) {
+        filters << QString("%1 image files (*.%2)").arg(ext.toUpper(), ext);
+    }
+
+    const QString filter = filters.join(";;");
+    QString selectedFilter;
+
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, filter, &selectedFilter, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;
     }
     Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
-    if(filename.endsWith(".png")) {
-        filename.chop(4);
+    const qsizetype filterIndex = filters.indexOf(selectedFilter);
+    const QString& extension = extensions[filterIndex];
+    if(!filename.endsWith(extension)) {
+        filename += '.' + extension;
     }
-    filename += ".png";
-    central->grab().save(filename);
+
+    switch (filterIndex)
+    {
+    case 0:  // PNG
+        central->grab().save(filename);
+        break;
+
+    case 1:  // SVG
+    {
+        QSvgGenerator generator;
+        generator.setFileName(filename);
+        generator.setSize(central->size());
+        generator.setTitle(QCoreApplication::applicationName());
+        generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
+
+        QPainter painter;
+        if (painter.begin(&generator)) {
+            central->render(&painter);
+            painter.end();
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
-void Mode::saveSVG()
-{
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "SVG image files (*.svg)", nullptr, Preferences::QFileDialogOptions());
-    if(filename.isEmpty()) {
-        // aborted selection
-        return;
-    }
-    Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
-    if(filename.endsWith(".svg")) {
-        filename.chop(4);
-    }
-    filename += ".svg";
+// void Mode::saveSVG()
+// {
+//     auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png);;SVG image files (*.svg)", nullptr, Preferences::QFileDialogOptions());
+//     if(filename.isEmpty()) {
+//         // aborted selection
+//         return;
+//     }
+//     Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
+//     if(filename.endsWith(".svg")) {
+//         filename.chop(4);
+//     }
+//     filename += ".svg";
 
-    QSvgGenerator generator;
-    generator.setFileName(filename);
-    generator.setSize(central->size());
-    generator.setTitle(QCoreApplication::applicationName());
-    generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
+//     QSvgGenerator generator;
+//     generator.setFileName(filename);
+//     generator.setSize(central->size());
+//     generator.setTitle(QCoreApplication::applicationName());
+//     generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
 
-    QPainter painter;
-    if (painter.begin(&generator)) {
-        central->render(&painter);
-        painter.end();
-    }
-}
+//     QPainter painter;
+//     if (painter.begin(&generator)) {
+//         central->render(&painter);
+//         painter.end();
+//     }
+// }
 
 void Mode::finalize(QWidget *centralWidget)
 {

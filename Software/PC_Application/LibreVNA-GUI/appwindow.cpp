@@ -249,9 +249,6 @@ void AppWindow::SetupMenu()
     connect(ui->actionSave_image, &QAction::triggered, [=](){
         modeHandler->getActiveMode()->saveSreenshot();
     });
-    connect(ui->actionSave_svg, &QAction::triggered, [=](){
-        modeHandler->getActiveMode()->saveSVG();
-    });
 
     connect(ui->actionPreset, &QAction::triggered, [=](){
         modeHandler->getActiveMode()->preset();
