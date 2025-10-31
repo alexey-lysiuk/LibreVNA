@@ -151,20 +151,25 @@ void Mode::saveSreenshot()
         filters << QString("%1 image files (*.%2)").arg(ext.toUpper(), ext);
     }
 
-    const QString filter = filters.join(";;");
-    QString selectedFilter;
+    auto& settings = Preferences::getInstance().UISettings;
+    const QString filterString = filters.join(";;");
+    qsizetype filterIndex = qBound(0, settings.saveImageFilterIndex, filters.size() - 1);
+    QString selectedFilter = filters[filterIndex];
 
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, filter, &selectedFilter, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", settings.Paths.image, filterString, &selectedFilter, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;
     }
-    Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
-    const qsizetype filterIndex = filters.indexOf(selectedFilter);
+
+    filterIndex = filters.indexOf(selectedFilter);
     const QString& extension = extensions[filterIndex];
     if(!filename.endsWith(extension)) {
         filename += '.' + extension;
     }
+
+    settings.Paths.image = QFileInfo(filename).path();
+    settings.saveImageFilterIndex = filterIndex;
 
     switch (filterIndex)
     {
@@ -192,32 +197,6 @@ void Mode::saveSreenshot()
         break;
     }
 }
-
-// void Mode::saveSVG()
-// {
-//     auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png);;SVG image files (*.svg)", nullptr, Preferences::QFileDialogOptions());
-//     if(filename.isEmpty()) {
-//         // aborted selection
-//         return;
-//     }
-//     Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
-//     if(filename.endsWith(".svg")) {
-//         filename.chop(4);
-//     }
-//     filename += ".svg";
-
-//     QSvgGenerator generator;
-//     generator.setFileName(filename);
-//     generator.setSize(central->size());
-//     generator.setTitle(QCoreApplication::applicationName());
-//     generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
-
-//     QPainter painter;
-//     if (painter.begin(&generator)) {
-//         central->render(&painter);
-//         painter.end();
-//     }
-// }
 
 void Mode::finalize(QWidget *centralWidget)
 {
