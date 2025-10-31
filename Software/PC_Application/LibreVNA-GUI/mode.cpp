@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QCoreApplication>
 #include <QPainter>
 #include <QSvgGenerator>
 
@@ -172,6 +173,8 @@ void Mode::saveSVG()
     QSvgGenerator generator;
     generator.setFileName(filename);
     generator.setSize(central->size());
+    generator.setTitle(QCoreApplication::applicationName());
+    generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
 
     QPainter painter;
     if (painter.begin(&generator)) {
