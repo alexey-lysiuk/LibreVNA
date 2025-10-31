@@ -143,6 +143,21 @@ Mode::Type Mode::TypeFromName(QString s)
 
 void Mode::saveSreenshot()
 {
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
+    if(filename.isEmpty()) {
+        // aborted selection
+        return;
+    }
+    Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
+    if(filename.endsWith(".png")) {
+        filename.chop(4);
+    }
+    filename += ".png";
+    central->grab().save(filename);
+}
+
+void Mode::saveSVG()
+{
     auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "SVG image files (*.svg)", nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
