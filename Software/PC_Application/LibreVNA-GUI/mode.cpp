@@ -181,7 +181,7 @@ void Mode::saveSreenshot()
     {
         QSvgGenerator generator;
         generator.setFileName(filename);
-        generator.setSize(central->size());
+        generator.setViewBox(QRect(QPoint(), central->size()));
         generator.setTitle(QCoreApplication::applicationName());
         generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
 
