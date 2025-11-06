@@ -6,15 +6,13 @@
 #include "CustomWidgets/informationbox.h"
 
 #include "ui_main.h"
+#include "screenshot.h"
 
 #include <QPushButton>
 #include <QSettings>
 #include <QDebug>
 #include <QFileDialog>
 #include <QInputDialog>
-#include <QCoreApplication>
-#include <QPainter>
-#include <QSvgGenerator>
 
 //QButtonGroup* Mode::modeButtonGroup = nullptr;
 
@@ -144,58 +142,7 @@ Mode::Type Mode::TypeFromName(QString s)
 
 void Mode::saveSreenshot()
 {
-    const QStringList extensions = QStringList() << "png" << "svg";
-    QStringList filters;
-
-    for (const QString& ext: extensions) {
-        filters << QString("%1 image files (*.%2)").arg(ext.toUpper(), ext);
-    }
-
-    auto& settings = Preferences::getInstance().UISettings;
-    const QString filterString = filters.join(";;");
-    qsizetype filterIndex = qBound(0, settings.saveImageFilterIndex, filters.size() - 1);
-    QString selectedFilter = filters[filterIndex];
-
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", settings.Paths.image, filterString, &selectedFilter, Preferences::QFileDialogOptions());
-    if(filename.isEmpty()) {
-        // aborted selection
-        return;
-    }
-
-    filterIndex = filters.indexOf(selectedFilter);
-    const QString& extension = extensions[filterIndex];
-    if(!filename.endsWith(extension)) {
-        filename += '.' + extension;
-    }
-
-    settings.Paths.image = QFileInfo(filename).path();
-    settings.saveImageFilterIndex = filterIndex;
-
-    switch (filterIndex)
-    {
-    case 0:  // PNG
-        central->grab().save(filename);
-        break;
-
-    case 1:  // SVG
-    {
-        QSvgGenerator generator;
-        generator.setFileName(filename);
-        generator.setViewBox(QRect(QPoint(), central->size()));
-        generator.setTitle(QCoreApplication::applicationName());
-        generator.setDescription(QString("Created by %1 %2").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion()));
-
-        QPainter painter;
-        if (painter.begin(&generator)) {
-            central->render(&painter);
-            painter.end();
-        }
-        break;
-    }
-
-    default:
-        break;
-    }
+    SaveScreenshot(central);
 }
 
 void Mode::finalize(QWidget *centralWidget)
