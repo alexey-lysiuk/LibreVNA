@@ -325,7 +325,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
-    auto width = QFontMetrics(eStart->font()).horizontalAdvance("3.00000GHz") + 15;
+    auto width = QFontMetrics(eStart->font()).horizontalAdvance("10.00000 MHz") + 15;
     eStart->setFixedWidth(width);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &VNA::SetStartFreq);
@@ -1961,7 +1961,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
         double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
         double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
         int npoints = settings.npoints;
-        emit traceModel.SpanChanged(start, stop);
+        traceModel.setSpan(start, stop);
         if (settings.segments > 1) {
             // more than one segment, adjust start/stop
             npoints = ceil((double) settings.npoints / settings.segments);
